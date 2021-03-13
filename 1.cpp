@@ -49,11 +49,19 @@ class Point{
 };
 class Chain{
     private:
-        virtual std::string name() const{
-            return "Chain";
-        }
+        
     protected:
         std::vector<Point> points;
+        void _print(std::string name){
+            std::cout<<name<<points.size()<<std::endl;
+            for(int i = 0;i<points.size();i++){
+                std::cout<<"("<<round(points[i].X()*100)/100<<";"<<round(points[i].Y()*100)/100<<")";
+                if(i!=points.size()-1){
+                    std::cout<<",";
+                }
+            }
+            std::cout<<std::endl;
+        }
     public:
         std::vector<Point> Points() const{
             return points;
@@ -84,22 +92,12 @@ class Chain{
             }
             return len;
         }
-        void print(){
-            std::cout<<this->name()<<points.size()<<std::endl;
-            for(int i = 0;i<points.size();i++){
-                std::cout<<"("<<round(points[i].X()*100)/100<<";"<<round(points[i].Y()*100)/100<<")";
-                if(i!=points.size()-1){
-                    std::cout<<",";
-                }
-            }
-            std::cout<<std::endl;
+        virtual void print(){
+            _print("Chain");
         }
 };
 class ClosedChain:public Chain{
     private:
-        virtual std::string name() const{
-            return "Closed Chain";
-        }
     public:
         ClosedChain(std::vector<Point> points = std::vector<Point>()):Chain(points){
             //наверно должна быть какая то обработка случая с 2-мя точками
@@ -115,6 +113,9 @@ class ClosedChain:public Chain{
             double len = Chain::perimeter();
             len+=sqrt(pow(points[0].X() - points[points.size()-1].X(),2)+pow(points[0].Y() - points[points.size()-1].Y(),2));
             return len;
+        }
+        virtual void print() override{
+            _print("Closed Chain");
         }
 
 };
@@ -138,9 +139,6 @@ class Polygon:public ClosedChain{
             return true;
         }
     private:
-        virtual std::string name() const{
-            return "Polygon";
-        }
         int side(Point x,Point y,Point z){
             Point v1(y.X()-x.X(),y.Y()-x.Y());
             Point v2(z.X()-x.X(),z.Y()-x.Y());
@@ -186,12 +184,12 @@ class Polygon:public ClosedChain{
             s = abs(s)/2;
             return s;
         }
+        virtual void print() override{
+            _print("Polygon");
+        }
 };
 class Trapeze:public Polygon{
     private:
-        virtual std::string name() const{
-            return "Trapeze";
-        }
         bool isTrapeze(){
             if(size()!=4){
                 return false;
@@ -211,6 +209,9 @@ class Trapeze:public Polygon{
             return false;
         }
     public:
+        virtual void print() override{
+            _print("Polygon");
+        }
         Trapeze(std::tuple<Point,Point,Point,Point> p){
             this->points = std::vector<Point>(4);
             this->points[0] = std::get<0>(p);
@@ -258,12 +259,12 @@ class Triangle:public Polygon{
             Polygon::operator=(p);
             return *this;
         }
+        virtual void print() override{
+            _print("Triangle");
+        }
 };
 class RegularPolygon:public Polygon{
     private:
-        virtual std::string name() const{
-            return "RegularPolygon";
-        }
         int n;
         void rotateVector(Point* v, double angle){
             double x = v->X();
@@ -272,6 +273,9 @@ class RegularPolygon:public Polygon{
             v->setY(-x*sin(angle)+y*cos(angle));
         }
     public:
+        virtual void print() override{
+            _print("Polygon");
+        }
         RegularPolygon(Point a,Point b,int n){
             this->n = n;
             if(n<3){
@@ -295,7 +299,7 @@ class RegularPolygon:public Polygon{
             return *this;
         }
         ~RegularPolygon() = default;
-        double area() const override{
+        virtual double area() const override{
             double a = sqrt(pow(points[0].X()-points[1].X(),2)+pow(points[0].Y()-points[1].Y(),2));
             double s = n*pow(a,2)/(4*tan(M_PI/n));
             return s;
@@ -317,13 +321,13 @@ int main(){
         Point x{first,second};
         pnts[i]=x;
     }
-    ClosedChain c{pnts};
-    ClosedChain c1 = c;
-    //c.print();
-    //c1.print();
+    ClosedChain cc{pnts};
+    Chain c{pnts};
     RegularPolygon rp(Point(1,0),Point(0,0),3);
     
     Triangle triangle(std::tuple<Point,Point,Point>(Point(3,9),Point(1,3),Point(2,10)));
-    Trapeze trapeze(std::tuple<Point,Point,Point,Point>(Point(0,0),Point(0,10),Point(3,2),Point(3,7)));
-    
+    Trapeze trapeze(std::tuple<Point,Point,Point,Point>(Point(0,0),Point(0,10),Point(3,7),Point(3,2)));
+    std::vector<Polygon> polymorph = std::vector<Polygon>(5);
+    Polygon& polym = triangle; 
+    polym.print();
 }
