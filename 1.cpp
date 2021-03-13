@@ -4,7 +4,7 @@
 #include<utility>
 #include<math.h>
 #include<tuple>
-#include<math.h>
+
 
 const double eps = 10E-6;
 class Point{
