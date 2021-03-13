@@ -100,9 +100,7 @@ class ClosedChain:public Chain{
     private:
     public:
         ClosedChain(std::vector<Point> points = std::vector<Point>()):Chain(points){
-            if(points.size()==0){
-                std::cout<<"ALARM"<<std::endl;
-            }
+            
             //наверно должна быть какая то обработка случая с 2-мя точками
         }
         ClosedChain(const ClosedChain &chain):Chain(chain){   
