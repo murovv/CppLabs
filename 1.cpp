@@ -53,7 +53,7 @@ class Chain{
     protected:
         std::vector<Point> points;
         void _print(std::string name){
-            std::cout<<name<<points.size()<<std::endl;
+            std::cout<<name<<", size = "<<points.size()<<std::endl;
             for(int i = 0;i<points.size();i++){
                 std::cout<<"("<<round(points[i].X()*100)/100<<";"<<round(points[i].Y()*100)/100<<")";
                 if(i!=points.size()-1){
@@ -100,6 +100,9 @@ class ClosedChain:public Chain{
     private:
     public:
         ClosedChain(std::vector<Point> points = std::vector<Point>()):Chain(points){
+            if(points.size()==0){
+                std::cout<<"ALARM"<<std::endl;
+            }
             //наверно должна быть какая то обработка случая с 2-мя точками
         }
         ClosedChain(const ClosedChain &chain):Chain(chain){   
@@ -121,6 +124,8 @@ class ClosedChain:public Chain{
 };
 class Polygon:public ClosedChain{
     protected:
+        Polygon(){ 
+        }
         bool isConvexAndSimple(){
             int sz = this->size();
             int side_=side(points[0],points[1],points[2]); 
@@ -163,7 +168,7 @@ class Polygon:public ClosedChain{
                 exit(1);
             }
         }
-        Polygon(){}
+        
         Polygon(const Polygon &p):ClosedChain(p){
             if(!this->isValid()){
                 std::cout<<"Invalid polygon"<<std::endl;
@@ -210,7 +215,7 @@ class Trapeze:public Polygon{
         }
     public:
         virtual void print() override{
-            _print("Polygon");
+            _print("Trapeze");
         }
         Trapeze(std::tuple<Point,Point,Point,Point> p){
             this->points = std::vector<Point>(4);
@@ -223,12 +228,20 @@ class Trapeze:public Polygon{
                 exit(1);
             }
         }
+
         Trapeze(const std::vector<Point> points){
             this->points = points;
             if(!this->isTrapeze()){
                 std::cout<<"Invalid trapeze"<<std::endl;
                 exit(1);
             }
+        }
+        Trapeze(Trapeze &tr):Polygon(tr){
+
+        }
+        Trapeze &operator=(const Trapeze p){
+            Polygon::operator=(p);
+            return *this;
         }
         ~Trapeze() = default;
 };
@@ -274,12 +287,13 @@ class RegularPolygon:public Polygon{
         }
     public:
         virtual void print() override{
-            _print("Polygon");
+            _print("RegularPolygon");
         }
         RegularPolygon(Point a,Point b,int n){
             this->n = n;
             if(n<3){
                 std::cout<<"Invalid number of points in regular polygon!";
+                exit(1);
             }
             double angle = 2*M_PI/n;
             Point ab  = Point(b.X()-a.X(),b.Y()-a.Y());
@@ -313,7 +327,7 @@ class RegularPolygon:public Polygon{
 };
 int main(){
     int sz = 10;
-    srand(42);
+    srand(2847);
     std::vector<Point> pnts = std::vector<Point>(sz);
     for(int i = 0;i<sz;i++){
         double first = (rand()%1000)/10.0;
@@ -321,13 +335,25 @@ int main(){
         Point x{first,second};
         pnts[i]=x;
     }
-    ClosedChain cc{pnts};
-    Chain c{pnts};
+    ClosedChain closedChain{pnts};
+    Chain chain{pnts};
     RegularPolygon rp(Point(1,0),Point(0,0),3);
-    
     Triangle triangle(std::tuple<Point,Point,Point>(Point(3,9),Point(1,3),Point(2,10)));
     Trapeze trapeze(std::tuple<Point,Point,Point,Point>(Point(0,0),Point(0,10),Point(3,7),Point(3,2)));
-    std::vector<Polygon> polymorph = std::vector<Polygon>(5);
-    Polygon& polym = triangle; 
-    polym.print();
+    std::vector<Polygon*> polymorhTest1 = std::vector<Polygon*>();
+    polymorhTest1.push_back(&triangle);
+    polymorhTest1.push_back(&trapeze);
+    polymorhTest1.push_back(&rp);
+    for(int i = 0;i<polymorhTest1.size();i++){
+        std::cout<<polymorhTest1[i]->area()<<std::endl;
+    }
+    std::vector<Chain*> polymorphTest2 = std::vector<Chain*>();
+    polymorphTest2.push_back(&chain);
+    polymorphTest2.push_back(&closedChain);
+    polymorphTest2.push_back(&triangle);
+    polymorphTest2.push_back(&trapeze);
+    polymorphTest2.push_back(&rp);
+    for(int i=0;i<polymorphTest2.size();i++){
+        polymorphTest2[i]->print();
+    }
 }
