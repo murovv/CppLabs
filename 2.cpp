@@ -4,35 +4,35 @@
 #include<algorithm>
 #include<stdlib.h>
 #include<typeinfo>
+using std::string;
 const double eps = 10E-8;
 class Polynom{
     private:
-        std::string str;
         std::vector<double> coefs;
-        bool isNum(int n){
+        bool isNum(string& str,int n){
             if(str[n]>='0'&&str[n]<='9'||str[n]=='.'){
                 return true;
             }
             return false;
         }
-        bool isSign(int n){
+        bool isSign(string& str,int n){
             if(str[n]=='+'||str[n]=='-'){
                 return true;
             }
             return false;
         }
-        bool invalidSym(int n){
-            if(!isNum(n)&&!isSign(n)&&str[n]!='x'&&str[n]!='^'){
+        bool invalidSym(string& str,int n){
+            if(!isNum(str,n)&&!isSign(str,n)&&str[n]!='x'&&str[n]!='^'){
                 return true;
             }
             return false;
         }
-        void init(){
+        void init(std::string& str){
             int i = 1;
             while(i<str.size()){
                 std::string monomial = "";
                 monomial.push_back(str[i-1]);
-                while(i<str.size()&&!isSign(i)){
+                while(i<str.size()&&!isSign(str,i)){
                     monomial = monomial+str[i];
                     ++i;
                 }
@@ -90,17 +90,17 @@ class Polynom{
                 i++;
             }
         }
-        void formatString(){
+        void formatString(std::string &str){
             str.erase(std::remove(str.begin(),str.end(),' '),str.end());
             if(str[0]!='+'||str[0]!='-'){
                 str = "+"+str;
             }
             for(int i = 1;i<str.size();i++){
-                if(!isNum(i)&&!isSign(i)&&str[i]!='+'&&str[i]!='-'&&str[i]!='x'&&str[i]!='^'&&str[i]!='.'){
+                if(!isNum(str,i)&&!isSign(str,i)&&str[i]!='+'&&str[i]!='-'&&str[i]!='x'&&str[i]!='^'&&str[i]!='.'){
                     std::cout<<"invalid char";
                     exit(1);    
                 }
-                if((isSign(i)&&isSign(i-1))||(str[i]=='x'&&str[i-1]=='x')||(str[i-1]=='.'&&(str[i]>='9'||str[i]<='0'))){
+                if((isSign(str,i)&&isSign(str,i-1))||(str[i]=='x'&&str[i-1]=='x')||(str[i-1]=='.'&&(str[i]>='9'||str[i]<='0'))){
                     std::cout<<"invalid signs";
                     exit(1);
                 }
@@ -118,10 +118,11 @@ class Polynom{
         std::vector<double> Coefs(){
             return coefs;
         }
-        Polynom(const std::string& str_):str(str_){
+        Polynom(const std::string& str_){
             coefs = std::vector<double>(1);
-            formatString();
-            init();
+            std::string str = str_;
+            formatString(str);
+            init(str);
             minimize();
         }
         Polynom(const std::vector<double>& coefs_){
@@ -182,12 +183,38 @@ class Polynom{
             }
             return *this;
         }
-        Polynom& operator-=(const Polynom& pol){
-            *this = (*this - pol);
+        Polynom& operator-=(const Polynom& pol2){
+            int l = std::max(this->coefs.size(),pol2.coefs.size());
+            int i = 0;
+            for(i;i<std::min(this->coefs.size(),pol2.coefs.size());i++){
+                this->coefs[i] = this->coefs[i]-pol2.coefs[i];
+            }
+            if(this->coefs.size()>pol2.coefs.size()){
+                for(i;i<l;i++){
+                    this->coefs[i] = this->coefs[i];
+                }
+            }else{
+                for(i;i<l;i++){
+                    this->coefs[i] = -pol2.coefs[i];
+                }
+            }
             return *this;
         }
-        Polynom& operator+=(const Polynom& pol){
-            *this = (*this + pol);
+        Polynom& operator+=(const Polynom& pol2){
+            int l = std::max(this->coefs.size(),pol2.coefs.size());
+            int i = 0;
+            for(i;i<std::min(this->coefs.size(),pol2.coefs.size());i++){
+                this->coefs[i] = this->coefs[i]+pol2.coefs[i];
+            }
+            if(this->coefs.size()>pol2.coefs.size()){
+                for(i;i<l;i++){
+                    this->coefs[i] = this->coefs[i];
+                }
+            }else{
+                for(i;i<l;i++){
+                    this->coefs[i] = pol2.coefs[i];
+                }
+            }
             return *this;
         }
         Polynom& operator*=(const Polynom& pol){
@@ -221,41 +248,13 @@ bool operator!=(const Polynom& pol1,const Polynom& pol2){
     return !(pol1==pol2);
 }
 Polynom operator-(const Polynom& pol1,const Polynom& pol2){
-    int l = std::max(pol1.coefs.size(),pol2.coefs.size());
-    std::vector<double> ans = std::vector<double>(l);
-    int i = 0;
-    for(i;i<std::min(pol1.coefs.size(),pol2.coefs.size());i++){
-        ans[i] = pol1.coefs[i]-pol2.coefs[i];
-    }
-    if(pol1.coefs.size()>pol2.coefs.size()){
-        for(i;i<l;i++){
-            ans[i] = pol1.coefs[i];
-        }
-    }else{
-        for(i;i<l;i++){
-            ans[i] = -pol2.coefs[i];
-        }
-    }
-    Polynom out(ans);
+    Polynom out(pol1);
+    out-=pol2;
     return out;
 }
 Polynom operator+(const Polynom& pol1,const Polynom& pol2){
-    int l = std::max(pol1.coefs.size(),pol2.coefs.size());
-    std::vector<double> coefs = std::vector<double>(l);
-    int i = 0;
-    for(i;i<std::min(pol1.coefs.size(),pol2.coefs.size());i++){
-        coefs[i] = pol1.coefs[i]+pol2.coefs[i];
-    }
-    if(pol1.coefs.size()>pol2.coefs.size()){
-        for(i;i<l;i++){
-            coefs[i] = pol1.coefs[i];
-        }
-    }else{
-        for(i;i<l;i++){
-            coefs[i] = pol2.coefs[i];
-        }
-    }
-    Polynom out(coefs);
+    Polynom out(pol1);
+    out+=pol2;
     return out;
 }
 std::ostream& operator<<(std::ostream &out, const Polynom &pol){
@@ -304,11 +303,11 @@ std::istream& operator>> (std::istream &in, Polynom &pol){
     return in;
 }
 int main(){
-    std::string s = "2+1x+34x^2";
+    std::string s = "2+1x+34x^2+0x^3";
     std::string s1 = "1+1x+2x^2";
     Polynom test(s);
     Polynom test1(s1);
     Polynom res("2x");
-    res = test*test1*res/77-Polynom("x+x^2");
-    std::cout<<res<<std::endl<<res[0];
+    res = test*test1;
+    std::cout<<res;
 }
