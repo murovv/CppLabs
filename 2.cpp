@@ -184,6 +184,10 @@ class Polynom{
             return *this;
         }
         Polynom& operator-=(const Polynom& pol2){
+            int sz = pol2.coefs.size();
+            if(sz>this->coefs.size()){
+                this->coefs.resize(sz);
+            }
             int l = std::max(this->coefs.size(),pol2.coefs.size());
             int i = 0;
             for(i;i<std::min(this->coefs.size(),pol2.coefs.size());i++){
@@ -201,6 +205,10 @@ class Polynom{
             return *this;
         }
         Polynom& operator+=(const Polynom& pol2){
+            int sz = pol2.coefs.size();
+            if(sz>this->coefs.size()){
+                this->coefs.resize(sz);
+            }
             int l = std::max(this->coefs.size(),pol2.coefs.size());
             int i = 0;
             for(i;i<std::min(this->coefs.size(),pol2.coefs.size());i++){
