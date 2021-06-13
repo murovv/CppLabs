@@ -1,3 +1,5 @@
+
+
 #include<iostream>
 #include<vector>
 #include<forward_list>
@@ -90,9 +92,12 @@ bool is_partitioned(Iter begin,Iter end,Pred pred){
 }
 template<typename Iter>
 bool is_palindrome(Iter begin,Iter end){
-    //проверка наличия -- и копирование в вектор (либо за квадрат времени)
+    if(begin==end){
+        return true;
+    }
+    Iter stop = end;
     --end;
-    while(begin!=end){
+    while(begin!=stop){
         if(*begin!=*end){
             return false;
         }
